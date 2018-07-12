@@ -1,13 +1,10 @@
 #include <Windows.h>
 #include <Wincon.h>
 #include <iostream>
+#include <cmath>
 
-
-//float distance3D(float pX, float pY, float pZ, float eX, float eY, float eZ) {
-//    return sqrt(pow(pX - eX, 2.0) + pow(pY - eY, 2.0) + pow(pZ - eZ, 2.0));
-//}
-//I don't know if this is the right way to do a struct, seems wrong since all of my
-//stuff is a pointer
+//I don't know if this is the right way to do a struct, seems wrong since all of
+// my members (is that what we call them?) are pointers.
 typedef struct{
     int*    health;
     float*	fPosX;
@@ -18,12 +15,18 @@ typedef struct{
     char*	*PlayerName;
 }EntityData;
 
-//this is alllll fucked up, I will fix it later
+// pretty simple function to calculate distance between two three dimensional points
+float distance3D(float pX, float pY, float pZ, float eX, float eY, float eZ) {
+    return sqrt(pow(pX - eX, 2.0) + pow(pY - eY, 2.0) + pow(pZ - eZ, 2.0));
+}
+
+// If I have done this correctly it will take an address (base) and apply offsets
+// provided in a list (offsets[]) to it until it has reached the end. At which point
+// all you have to do is dereference and cast the value to edit it in memory. I could
+// be wrong though since I haven't done much work in c++
 uintptr_t addressFinder(uintptr_t* base, uintptr_t offsets[]){
     int num_elements = sizeof( offsets ) / sizeof( offsets[0] );
     uintptr_t address = *base;
-//    uintptr_t correct = (*base + offsets[0]);
-
     for(int i = 0; i < num_elements; i++){
         address = (address + offsets[i]);
     }
