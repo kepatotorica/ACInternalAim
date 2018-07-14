@@ -1,9 +1,9 @@
 file(REMOVE_RECURSE
   "CMakeFiles/dll_InternalACAimbotFirst.dir/library.cpp.obj"
-  "libdll_InternalACAimbotFirst.pdb"
-  "libdll_InternalACAimbotFirst.dll"
-  "libdll_InternalACAimbotFirst.dll.a"
-  "libdll_InternalACAimbotFirst.dll.manifest"
+  "dll_InternalACAimbotFirst.pdb"
+  "dll_InternalACAimbotFirst.dll"
+  "dll_InternalACAimbotFirst.lib"
+  "dll_InternalACAimbotFirst.dll.manifest"
 )
 
 # Per-language clean rules from dependency scanning.

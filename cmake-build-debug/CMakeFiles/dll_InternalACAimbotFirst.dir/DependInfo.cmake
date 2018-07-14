@@ -6,7 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "C:/myGit/dll_InternalACAimbotFirst/library.cpp" "C:/myGit/dll_InternalACAimbotFirst/cmake-build-debug/CMakeFiles/dll_InternalACAimbotFirst.dir/library.cpp.obj"
   )
-set(CMAKE_CXX_COMPILER_ID "GNU")
+set(CMAKE_CXX_COMPILER_ID "MSVC")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH

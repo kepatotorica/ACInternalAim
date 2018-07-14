@@ -10,6 +10,8 @@ typedef struct{
     float*	fPosX;
     float*	fPosY;
     float*	fPosZ;
+    float*	fAimX;
+    float*	fAimY;
     float*	PlayerDistance;
     int*	Team;
     char*	*PlayerName;
@@ -37,8 +39,11 @@ DWORD WINAPI hackthread(LPVOID param)
 {
 //for debugging
     AllocConsole();
+    AttachConsole(GetProcessId(GetCurrentProcess()));
+    freopen("CONOUT$", "w", stdout);
     HANDLE han = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsole(han,"getting started\n",16,new DWORD,0);
+    printf_s("");
 //-------------
 
     uintptr_t* localPlayerAddress = (uintptr_t*)(0x50F4F4);
@@ -57,7 +62,19 @@ DWORD WINAPI hackthread(LPVOID param)
 
     EntityData	my;
 
+    uintptr_t pLocZAdd, pLocXAdd, pLocYAdd, aimXAdd, aimYAdd, myTeamAdd = 0;  // where we are standing
+    uintptr_t entHealthAdd, entNameAdd, entTeamAdd, entZAdd, entXAdd, entYAdd, currentEntAdd = 0;  // this will use the same offsets as plyZ, but the baseAddress of who we are targeting
+
     my.health = (int*)addressFinder(localPlayerAddress,healthOffs);
+    my.fPosX = (float*)addressFinder(localPlayerAddress,xPosOffs);
+    my.fPosY = (float*)addressFinder(localPlayerAddress,yPosOffs);
+    my.fPosZ = (float*)addressFinder(localPlayerAddress,zPosOffs);
+    my.fAimX = (float*)addressFinder(localPlayerAddress,xMoOffs);
+    my.fAimY = (float*)addressFinder(localPlayerAddress,yMoOffs);
+
+    aimXAdd = addressFinder(localPlayerAddress,xMoOffs);
+    aimYAdd = addressFinder(localPlayerAddress,yMoOffs);
+
 //    my.health = (int*)(*localPlayerAddress + healthOffs[0]);
 //    my.fPosX = (float*)(*localPlayerAddress + 0xF8);
 
@@ -67,13 +84,34 @@ DWORD WINAPI hackthread(LPVOID param)
 
     while (true)
     {
+        printf_s("kiyip's first internal aimbot\n");
+        printf_s("press f3 to stop the aimbot\n");
+        printf_s("------------------------------\n");
 //       my.health = 9999;
 //        *health = 9999;
         *my.health = 1000;
+        printf_s("player\n");
+        printf_s("posx: %f\n", *my.fPosX);
+        printf_s("posy: %f\n", *my.fPosY);
+        printf_s("posz: %f\n", *my.fPosZ);
+        printf_s("aimx: %f\n", *my.fAimX);
+        printf_s("aimy: %f\n", *my.fAimY);
+
+
+
+
+
+
+
+
+
+
+
         // So we can break from the infinite loop
         if (GetAsyncKeyState(VK_F3) || !debug) break;
 
         Sleep(10);
+        system ("CLS");
     }
 
     // Free the DLL
