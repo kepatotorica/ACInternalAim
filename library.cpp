@@ -23,6 +23,22 @@ float distance3D(float pX, float pY, float pZ, float eX, float eY, float eZ) {
     return sqrt(pow(pX - eX, 2.0) + pow(pY - eY, 2.0) + pow(pZ - eZ, 2.0));
 }
 
+
+bool IsValidReadPtr(void * Ptr)
+{
+    if (!Ptr)
+        return false; //Ptr is a nullptr
+
+    MEMORY_BASIC_INFORMATION MBI{ 0 };
+    if (!VirtualQuery(Ptr, &MBI, sizeof(MEMORY_BASIC_INFORMATION)))
+        return false; //VirtualQuery fail = definitly not a valid pointer
+
+    if ((MBI.State == MEM_COMMIT) && (MBI.Protect & MEM_READ) && !(MBI.Protect & PAGE_GUARD))
+        return true; //memory is commited, page has (at least) read access and isn't a guard page
+
+    return false;
+}
+
 // If I have done this correctly it will take an address (base) and apply offsets
 // provided in a list (offsets[]) to it until it has reached the end. At which point
 // all you have to do is dereference and cast the value to edit it in memory. I could
@@ -117,8 +133,9 @@ DWORD WINAPI hackthread(LPVOID param)
                 //TODO: find the closest entity
                 currEnOffs[0] = entSize * i;
                 currentEntAdd = (uintptr_t *)addressFinder(entArrayBaseAdd, currEnOffs);
-                int real = (int) *(uintptr_t *)addressFinder(currentEntAdd, inGameOffs);
-                if(real != 1    ) {
+//                int real = (int) *(uintptr_t *)addressFinder(currentEntAdd, inGameOffs);
+                bool real = IsValidReadPtr((uintptr_t *)addressFinder(currentEntAdd, inGameOffs));
+                if(real) {
                     enemy.health = (int *) addressFinder(currentEntAdd, healthOffs);
                     if ((*enemy.health > 0 && *enemy.health <= 100)) {
                         enemy.team = (int *) addressFinder(currentEntAdd, teamOffs);

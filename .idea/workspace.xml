@@ -38,8 +38,8 @@
       <file leaf-file-name="library.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/library.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
-              <caret line="120" column="28" selection-start-line="120" selection-start-column="28" selection-end-line="120" selection-end-column="28" />
+            <state relative-caret-position="362">
+              <caret line="41" column="81" lean-forward="true" selection-end-line="206" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -79,7 +79,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../ACFirstExternalAimbot" />
     <property name="settings.editor.selected.configurable" value="CPPToolchains" />
   </component>
   <component name="RunDashboard">
@@ -121,12 +121,12 @@
       <workItem from="1531762978938" duration="752000" />
       <workItem from="1531774474504" duration="571000" />
       <workItem from="1531775076335" duration="3105000" />
-      <workItem from="1531779974105" duration="484000" />
+      <workItem from="1531779974105" duration="3166000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="45774000" />
+    <option name="totallyTimeSpent" value="48456000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="953" y="0" width="974" height="1087" extended-state="0" />
@@ -302,8 +302,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/library.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="120" column="28" selection-start-line="120" selection-start-column="28" selection-end-line="120" selection-end-column="28" />
+        <state relative-caret-position="362">
+          <caret line="41" column="81" lean-forward="true" selection-end-line="206" selection-end-column="1" />
         </state>
       </provider>
     </entry>
