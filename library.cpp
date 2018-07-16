@@ -14,7 +14,7 @@ typedef struct{
     float*	fAimX;
     float*	fAimY;
     float*	PlayerDistance;
-    int*	Team;
+    int*	team;
     char*	*PlayerName;
 }EntityData;
 
@@ -42,9 +42,13 @@ DWORD WINAPI hackthread(LPVOID param)
     AllocConsole();
     AttachConsole(GetProcessId(GetCurrentProcess()));
     freopen("CONOUT$", "w", stdout);
-    HANDLE han = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsole(han,"getting started\n",16,new DWORD,0);
-    printf_s("");
+    HANDLE han = GetStdHandle(STD_OUTPUT_HANDLE); //this doesn't work with minGW compiler
+    printf_s("----------------------------------------------------------------------\n");
+    printf_s("                kiyip's first internal aimbot\n");
+    printf_s("          right click or left alt activates aimbot\n");
+    printf_s("                         f3 to quit\n");
+    printf_s("----------------------------------------------------------------------\n");
+
 //-------------
 
     uintptr_t* localPlayerAddress = (uintptr_t*)(0x50F4F4);
@@ -61,12 +65,16 @@ DWORD WINAPI hackthread(LPVOID param)
     uintptr_t teamOffs[] = { 0x032c }; // 0 red 1 blue
     uintptr_t healthOffs[] = { 0xf8 };
     uintptr_t currEnOffs[] = { 0x4 };
+    uintptr_t inGameOffs[] = { 0x70 }; //should be one I think
 
     EntityData	my;
 
     uintptr_t pLocZAdd, pLocXAdd, pLocYAdd, aimXAdd, aimYAdd, myTeamAdd = 0;  // where we are standing
     uintptr_t entHealthAdd, entNameAdd, entTeamAdd, entZAdd, entXAdd, entYAdd = 0;
     uintptr_t* currentEntAdd = 0;  // this will use the same offsets as plyZ, but the baseAddress of who we are targeting
+    float angleX, angleY, cloAngleX, cloAngleY = 0.0;
+    uintptr_t smoothNum = 30;
+
 
     my.health = (int*)addressFinder(localPlayerAddress,healthOffs);
     my.fPosX = (float*)addressFinder(localPlayerAddress,xPosOffs);
@@ -74,76 +82,92 @@ DWORD WINAPI hackthread(LPVOID param)
     my.fPosZ = (float*)addressFinder(localPlayerAddress,zPosOffs);
     my.fAimX = (float*)addressFinder(localPlayerAddress,xMoOffs);
     my.fAimY = (float*)addressFinder(localPlayerAddress,yMoOffs);
+    my.team = (int*)addressFinder(localPlayerAddress,teamOffs);
 
     aimXAdd = addressFinder(localPlayerAddress,xMoOffs);
     aimYAdd = addressFinder(localPlayerAddress,yMoOffs);
 
-//    my.health = (int*)(*localPlayerAddress + healthOffs[0]);
-//    my.fPosX = (float*)(*localPlayerAddress + 0xF8);
+    uintptr_t fovAllow = 20; //degrees of variance
+    uintptr_t distAllow = 20;
 
-//    if using CLion debugger and you want to exit the cheat while in game change value of
+//    if using CLion minGW debugger, or visual studio and you want to exit the cheat while in game change value of
 //    debug to 0; press f6
     BOOL debug = 1;
 
-    // So we can break from the infinite loop
-    while (!GetAsyncKeyState(VK_F3) || !debug)
+    int i = 1;
+    float dist = 0.0f;
+    float minDist = 99999999.0;
+    bool aimToggle, inAimFov, found = false;
+    int closestEntNum = 1;//typically this should start at one
+    float enDist;
+    EntityData enemy = my;
+    currEnOffs[0] = entSize * i;
+    while (!GetAsyncKeyState(VK_F3) || !debug) //find out a variable to make it so this doesn't crash the program in single player mode
     {
-        printf_s("kiyip's first internal aimbot\n");
-//        printf_s("press f3 to stop the aimbot\n");
-        printf_s("to turn off the cheat press f3\nto aim use left alt or right click\n");
-        printf_s("------------------------------\n");
-//       my.health = 9999;
-//        *health = 9999;
-        *my.health = 1000;
-        printf_s("player\n");
-        printf_s("posx: %f\n", *my.fPosX);
-        printf_s("posy: %f\n", *my.fPosY);
-        printf_s("posz: %f\n", *my.fPosZ);
-        printf_s("aimx: %f\n", *my.fAimX);
-        printf_s("aimy: %f\n", *my.fAimY);
-
-
-
-
-        int i = 0;
-        float dist = 0.0f;
-        float minDist = 99999999.0;
-        bool aimToggle, inAimFov, found = false;
-        uintptr_t entNum = 0x1;//typically this should start at one
-
-        EntityData enemy;
-        currEnOffs[entNum] = entSize * entNum;
-        currentEntAdd = (uintptr_t *)addressFinder(entArrayBaseAdd, currEnOffs);
-        printf_s("%x\n", entArrayBaseAdd);
-        printf_s("%x\n", currentEntAdd);
-        enemy.health = (int*)addressFinder(currentEntAdd,healthOffs);
-        printf_s("health: %i\n", *enemy.health);
+        i = 1;
+        dist = 0.0f;
+        minDist = 99999999.0;
+        aimToggle, inAimFov, found = false;
+        closestEntNum = 1;//typically this should start at zero
+        enDist = 0;
 
 
         if (GetAsyncKeyState(VK_RBUTTON) || GetAsyncKeyState(VK_LCONTROL)) {
-            while (i < 31 && !GetAsyncKeyState(VK_F3) ) {//I know you shouldn't need the async, but better than an infinite loop
+            while (i < 30 && !GetAsyncKeyState(VK_F3) ) {//I know you shouldn't need the async, but better than an infinite loop
                 //TODO: find the closest entity
+                currEnOffs[0] = entSize * i;
+                currentEntAdd = (uintptr_t *)addressFinder(entArrayBaseAdd, currEnOffs);
+                if((int) *(uintptr_t *)addressFinder(currentEntAdd, inGameOffs) == 1) {
+                    enemy.health = (int *) addressFinder(currentEntAdd, healthOffs);
+                    if ((*enemy.health > 0 && *enemy.health <= 100)) {
+                        enemy.team = (int *) addressFinder(currentEntAdd, teamOffs);
+                        if (*enemy.team != *my.team && (*enemy.team == 0 || *enemy.team == 1)) {
+                            enemy.fPosX = (float *) addressFinder(currentEntAdd, xPosOffs);
+                            enemy.fPosY = (float *) addressFinder(currentEntAdd, yPosOffs);
+                            enemy.fPosZ = (float *) addressFinder(currentEntAdd, zPosOffs);
 
-                EntityData enemy;
+                            enDist = distance3D(*my.fPosX, *my.fPosY, *my.fPosZ, *enemy.fPosX, *enemy.fPosY,
+                                                *enemy.fPosZ);
+                            angleX = (-(float) atan2(*enemy.fPosX - *my.fPosX, *enemy.fPosY - *my.fPosY)) /
+                                     3.14159265358979323846 * 180.0f + 180.0f;
+                            angleY = (atan2(*enemy.fPosZ - *my.fPosZ, enDist)) * 180.0f /
+                                     3.14159265358979323846;//it makes no sense that I need this here. but it wont work without it
+                            if (!(abs(angleX - *my.fAimX) > fovAllow || abs(angleY - *my.fAimY) > fovAllow)) {
+
+                                if (enDist < minDist) {
+                                    closestEntNum = i;
+                                    minDist = enDist;
+                                    found = true;
+                                    cloAngleX = angleX;
+                                    cloAngleY = angleY;
+                                }
+                            }
+                        }
+                    }
+                }
                 i++;
             }
-            //TODO: aim at the nearest entity
-            printf_s("AIMING\n");
 
+            if (found) {
+                cloAngleX = *my.fAimX + (cloAngleX - *my.fAimX) / smoothNum;
+                *my.fAimX = cloAngleX;
+
+                cloAngleY = *my.fAimY + (cloAngleY - *my.fAimY) / smoothNum;
+                *my.fAimY = cloAngleY;
+            }
         }
 
+//        currEnOffs[0] = entSize * closestEntNum;
+//        currentEntAdd = (uintptr_t *)addressFinder(entArrayBaseAdd, currEnOffs);
+//        enemy.health = (int *) addressFinder(currentEntAdd, healthOffs);
 
-
-
-
-
-        Sleep(10);
+        printf_s("enemy health: %i\n", *enemy.health );
+        Sleep(1);
         system ("CLS");
     }
-
-    // Free the DLL
     *my.health = 99;
     *my.health = 100;
+    system ("CLS");
     FreeConsole();
     FreeLibraryAndExitThread((HMODULE)param, NULL);
 
@@ -155,8 +179,7 @@ BOOL WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID lpReserved)
     switch (dwReason)
     {
         case DLL_PROCESS_ATTACH:
-            CreateThread(0, 0, hackthread, hModule, 0, 0); // Added hModule to be passed to hackthread
-            // DisableThreadLibraryCalls(0); <-- Not needed tbh
+            CreateThread(0, 0, hackthread, hModule, 0, 0);
             break;
 
         case DLL_PROCESS_DETACH:
