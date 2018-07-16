@@ -117,7 +117,8 @@ DWORD WINAPI hackthread(LPVOID param)
                 //TODO: find the closest entity
                 currEnOffs[0] = entSize * i;
                 currentEntAdd = (uintptr_t *)addressFinder(entArrayBaseAdd, currEnOffs);
-                if((int) *(uintptr_t *)addressFinder(currentEntAdd, inGameOffs) != 1) {
+                int real = (int) *(uintptr_t *)addressFinder(currentEntAdd, inGameOffs);
+                if(real != 1    ) {
                     enemy.health = (int *) addressFinder(currentEntAdd, healthOffs);
                     if ((*enemy.health > 0 && *enemy.health <= 100)) {
                         enemy.team = (int *) addressFinder(currentEntAdd, teamOffs);
